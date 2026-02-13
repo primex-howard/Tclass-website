@@ -124,3 +124,82 @@
     @apply bg-background text-foreground;
   }
 }
+/* Custom 2026 theme: sunrise slate */
+:root {
+  --radius: 0.875rem;
+  --background: oklch(0.98 0.01 95);
+  --foreground: oklch(0.23 0.03 245);
+  --card: oklch(0.99 0.005 90);
+  --card-foreground: oklch(0.23 0.03 245);
+  --popover: oklch(0.99 0.005 90);
+  --popover-foreground: oklch(0.23 0.03 245);
+  --primary: oklch(0.55 0.17 35);
+  --primary-foreground: oklch(0.99 0.01 95);
+  --secondary: oklch(0.92 0.03 80);
+  --secondary-foreground: oklch(0.28 0.03 245);
+  --muted: oklch(0.95 0.015 90);
+  --muted-foreground: oklch(0.47 0.035 245);
+  --accent: oklch(0.88 0.08 70);
+  --accent-foreground: oklch(0.25 0.03 245);
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.87 0.02 90);
+  --input: oklch(0.87 0.02 90);
+  --ring: oklch(0.56 0.15 40);
+}
+
+.dark {
+  --background: oklch(0.19 0.025 250);
+  --foreground: oklch(0.95 0.01 85);
+  --card: oklch(0.25 0.02 248);
+  --card-foreground: oklch(0.95 0.01 85);
+  --popover: oklch(0.24 0.02 248);
+  --popover-foreground: oklch(0.95 0.01 85);
+  --primary: oklch(0.7 0.16 50);
+  --primary-foreground: oklch(0.21 0.02 250);
+  --secondary: oklch(0.32 0.03 245);
+  --secondary-foreground: oklch(0.95 0.01 85);
+  --muted: oklch(0.29 0.02 246);
+  --muted-foreground: oklch(0.76 0.02 90);
+  --accent: oklch(0.36 0.05 70);
+  --accent-foreground: oklch(0.97 0.01 85);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(-14px); opacity: 0.9; }
+}
+
+@layer base {
+  body {
+    background:
+      radial-gradient(45rem 32rem at 8% -6%, oklch(0.9 0.08 65 / 0.55), transparent 70%),
+      radial-gradient(42rem 30rem at 95% 0%, oklch(0.86 0.08 35 / 0.45), transparent 72%),
+      linear-gradient(180deg, oklch(0.985 0.01 92) 0%, oklch(0.95 0.015 90) 55%, oklch(0.9 0.025 88) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: -12vh;
+    right: -8vw;
+    width: 30vw;
+    height: 30vw;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 35%, oklch(0.86 0.1 60 / 0.5), transparent 70%);
+    filter: blur(28px);
+    animation: floatGlow 9s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .dark body {
+    background:
+      radial-gradient(42rem 30rem at 10% -8%, oklch(0.34 0.08 55 / 0.4), transparent 72%),
+      radial-gradient(40rem 28rem at 95% 0%, oklch(0.32 0.05 240 / 0.55), transparent 70%),
+      linear-gradient(180deg, oklch(0.2 0.02 250) 0%, oklch(0.18 0.02 248) 60%, oklch(0.16 0.02 246) 100%);
+  }
+}

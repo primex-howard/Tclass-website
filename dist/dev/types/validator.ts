@@ -36,6 +36,15 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 }
 
 
+// Validate ../../../app/(faculty-admin)/admin/enrollments/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/admin/enrollments">> = Specific
+  const handler = {} as typeof import("../../../app/(faculty-admin)/admin/enrollments/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/(faculty-admin)/admin/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/admin">> = Specific
@@ -135,6 +144,15 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
   type __Unused = __Check
 }
 
+// Validate ../../../app/student/enrollment/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/student/enrollment">> = Specific
+  const handler = {} as typeof import("../../../app/student/enrollment/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/student/grades/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/student/grades">> = Specific
@@ -148,6 +166,24 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 {
   type __IsExpected<Specific extends AppPageConfig<"/student">> = Specific
   const handler = {} as typeof import("../../../app/student/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/student/reports/curriculum-evaluation/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/student/reports/curriculum-evaluation">> = Specific
+  const handler = {} as typeof import("../../../app/student/reports/curriculum-evaluation/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/student/reports/enrolled-subjects/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/student/reports/enrolled-subjects">> = Specific
+  const handler = {} as typeof import("../../../app/student/reports/enrolled-subjects/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

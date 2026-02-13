@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookOpen, Calendar, CheckCircle, Clock, FileText, GraduationCap, MessageSquare, Bell, Search, Menu, X, Upload, BookMarked, Trash2, Eye, ArrowLeft, Truck, Construction, Home, Heart, Laptop } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { apiFetch } from "@/lib/api-client";
 
 interface Course {
   id: number;
@@ -55,6 +56,10 @@ export default function StudentLandingPage() {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [libraryDialogOpen, setLibraryDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [forcePasswordModalOpen, setForcePasswordModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [courses, setCourses] = useState<Course[]>([
     { id: 1, name: "Rigid Highway Dump Truck NCII", instructor: "Engr. Dela Cruz", schedule: "Mon/Wed/Fri 8:00 AM", progress: 75 },
@@ -81,6 +86,19 @@ export default function StudentLandingPage() {
   ]);
 
   const [messages, setMessages] = useState<{id: number, recipient: string, subject: string, sentAt: string}[]>([]);
+
+  useEffect(() => {
+    apiFetch("/student/profile/password-reminder")
+      .then((res) => {
+        const required = Boolean((res as { must_change_password?: boolean }).must_change_password);
+        setMustChangePassword(required);
+        setForcePasswordModalOpen(required);
+      })
+      .catch(() => {
+        setMustChangePassword(false);
+        setForcePasswordModalOpen(false);
+      });
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,78 +237,72 @@ export default function StudentLandingPage() {
   const completedCount = assignments.filter(a => a.status === "completed").length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xl font-bold text-slate-900">TClass</span>
-              </Link>
-              <Badge variant="secondary" className="hidden sm:inline-flex">Student Portal</Badge>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/student" className="text-sm font-medium text-blue-600">Dashboard</Link>
-              <Link href="/student/courses" className="text-sm font-medium text-slate-600 hover:text-slate-900">Courses</Link>
-              <Link href="/student/assignments" className="text-sm font-medium text-slate-600 hover:text-slate-900">Assignments</Link>
-              <Link href="/student/grades" className="text-sm font-medium text-slate-600 hover:text-slate-900">Grades</Link>
-              <Link href="/student/calendar" className="text-sm font-medium text-slate-600 hover:text-slate-900">Calendar</Link>
-            </nav>
-
-            {/* Right Section */}
-            <div className="flex items-center gap-4">
-              <form onSubmit={handleSearch} className="relative hidden sm:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input 
-                  placeholder="Search courses & assignments..." 
-                  className="pl-9 w-64"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </form>
-              <Button variant="ghost" size="icon" className="relative" onClick={handleNotificationClick}>
-                <Bell className="h-5 w-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                )}
-              </Button>
-              <Avatar className="hidden sm:flex">
-                <AvatarFallback className="bg-blue-100 text-blue-700">JD</AvatarFallback>
-              </Avatar>
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white">
-            <div className="px-4 py-3 space-y-1">
-              <Link href="/student" className="block px-3 py-2 rounded-md text-base font-medium text-blue-600 bg-blue-50">Dashboard</Link>
-              <Link href="/student/courses" className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Courses</Link>
-              <Link href="/student/assignments" className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Assignments</Link>
-              <Link href="/student/grades" className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Grades</Link>
-              <Link href="/student/calendar" className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Calendar</Link>
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* Main Content */}
+    <div className="min-h-screen bg-slate-50">    {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Dialog open={forcePasswordModalOpen} onOpenChange={setForcePasswordModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Password Change Required</DialogTitle>
+              <DialogDescription>
+                You are using an auto-generated password. Update your password now to continue safely.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label>New Password</Label>
+                <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label>Confirm Password</Label>
+                <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  if (newPassword.length < 8) {
+                    toast.error("Password must be at least 8 characters.");
+                    return;
+                  }
+                  if (newPassword !== confirmPassword) {
+                    toast.error("Password confirmation does not match.");
+                    return;
+                  }
+                  apiFetch("/student/profile/change-password", {
+                    method: "POST",
+                    body: JSON.stringify({
+                      current_password: "",
+                      new_password: newPassword,
+                      new_password_confirmation: confirmPassword,
+                    }),
+                  })
+                    .then((res) => {
+                      toast.success((res as { message?: string }).message ?? "Password updated.");
+                      setMustChangePassword(false);
+                      setForcePasswordModalOpen(false);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    })
+                    .catch((error) => {
+                      toast.error(error instanceof Error ? error.message : "Unable to update password.");
+                    });
+                }}
+              >
+                Update Password
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Welcome back, Juan!</h1>
           <p className="text-slate-600 mt-1">Here&apos;s what&apos;s happening with your studies today.</p>
+          {mustChangePassword && (
+            <p className="text-sm text-amber-700 mt-2 font-medium">
+              Reminder: Please change your auto-generated password.
+            </p>
+          )}
         </div>
 
         {/* Stats Cards */}

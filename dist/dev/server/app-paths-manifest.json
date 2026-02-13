@@ -1,3 +1,6 @@
 {
+  "/(faculty-admin)/admin/page": "app/(faculty-admin)/admin/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
   "/student/page": "app/student/page.js"
 }

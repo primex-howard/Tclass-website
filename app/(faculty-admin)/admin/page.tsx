@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
+import { 
   Table,
   TableBody,
   TableCell,
@@ -57,13 +57,14 @@ import {
   Settings,
   FileText,
   BarChart3,
-  UserPlus,
   School,
   Trash2,
   Edit
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
+import { apiFetch } from "@/lib/api-client";
 
 // Types
 interface UserItem {
@@ -106,24 +107,27 @@ interface Notification {
   read: boolean;
 }
 
+interface AdmissionApplication {
+  id: number;
+  full_name: string;
+  age: number;
+  gender: string;
+  primary_course: string;
+  secondary_course: string | null;
+  email: string;
+  status: "pending" | "approved" | "rejected";
+  created_user_id: number | null;
+}
+
 export default function AdminDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
   // Dialog states
-  const [addUserOpen, setAddUserOpen] = useState(false);
   const [addDepartmentOpen, setAddDepartmentOpen] = useState(false);
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
-  
-  // Form states
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    role: "Student" as "Student" | "Faculty" | "Admin",
-    status: "active" as "active" | "pending",
-  });
   
   const [newDepartment, setNewDepartment] = useState({
     name: "",
@@ -165,6 +169,37 @@ export default function AdminDashboard() {
   ]);
   
   const [showNotifications, setShowNotifications] = useState(false);
+  const [admissions, setAdmissions] = useState<AdmissionApplication[]>([]);
+  const [recentCredentials, setRecentCredentials] = useState<{ fullName: string; email: string; studentNumber: string; temporaryPassword: string }[]>([]);
+  const [activeAdminTab, setActiveAdminTab] = useState("users");
+
+  const loadAdmissions = async () => {
+    try {
+      const response = await apiFetch("/admin/admissions");
+      const rows = (response as { applications?: AdmissionApplication[] }).applications ?? [];
+      setAdmissions(rows);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load admissions.");
+    }
+  };
+
+  useEffect(() => {
+    let alive = true;
+    apiFetch("/admin/admissions")
+      .then((response) => {
+        if (!alive) return;
+        const rows = (response as { applications?: AdmissionApplication[] }).applications ?? [];
+        setAdmissions(rows);
+      })
+      .catch((error) => {
+        if (!alive) return;
+        toast.error(error instanceof Error ? error.message : "Failed to load admissions.");
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const stats = {
     totalStudents: 1250,
@@ -183,24 +218,6 @@ export default function AdminDashboard() {
   );
 
   // Handlers
-  const handleAddUser = () => {
-    if (!newUser.name || !newUser.email) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    
-    const user: UserItem = {
-      id: users.length + 1,
-      ...newUser,
-      joined: "Just now",
-    };
-    
-    setUsers([user, ...users]);
-    setNewUser({ name: "", email: "", role: "Student", status: "active" });
-    setAddUserOpen(false);
-    toast.success(`User "${user.name}" added successfully`);
-  };
-
   const handleEditUser = () => {
     if (!selectedUser) return;
     
@@ -277,6 +294,40 @@ export default function AdminDashboard() {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const pendingAdmissions = admissions.filter((item) => item.status === "pending");
+
+  const handleApproveAdmission = async (id: number) => {
+    try {
+      const response = await apiFetch(`/admin/admissions/${id}/approve`, { method: "POST" });
+      const preview = (response as { credentials_preview?: { student_number: string; temporary_password: string }; message?: string }).credentials_preview;
+      const approved = admissions.find((a) => a.id === id);
+      if (preview && approved) {
+        setRecentCredentials((rows) => [
+          {
+            fullName: approved.full_name,
+            email: approved.email,
+            studentNumber: preview.student_number,
+            temporaryPassword: preview.temporary_password,
+          },
+          ...rows,
+        ]);
+      }
+      toast.success((response as { message?: string }).message ?? "Admission approved.");
+      await loadAdmissions();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to approve admission.");
+    }
+  };
+
+  const handleRejectAdmission = async (id: number) => {
+    try {
+      const response = await apiFetch(`/admin/admissions/${id}/reject`, { method: "POST", body: JSON.stringify({}) });
+      toast.error((response as { message?: string }).message ?? "Admission rejected.");
+      await loadAdmissions();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to reject admission.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -301,6 +352,7 @@ export default function AdminDashboard() {
               <button onClick={() => handleNavClick("Finance")} className="text-sm font-medium text-slate-600 hover:text-slate-900">Finance</button>
               <button onClick={() => handleNavClick("Reports")} className="text-sm font-medium text-slate-600 hover:text-slate-900">Reports</button>
               <button onClick={() => handleNavClick("Settings")} className="text-sm font-medium text-slate-600 hover:text-slate-900">Settings</button>
+              <Link href="/admin/enrollments" className="text-sm font-medium text-slate-600 hover:text-slate-900">Enrollments</Link>
             </nav>
 
             {/* Right Section */}
@@ -378,6 +430,7 @@ export default function AdminDashboard() {
               <button onClick={() => { handleNavClick("Finance"); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Finance</button>
               <button onClick={() => { handleNavClick("Reports"); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Reports</button>
               <button onClick={() => { handleNavClick("Settings"); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Settings</button>
+              <Link href="/admin/enrollments" className="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-50">Enrollments</Link>
             </div>
           </div>
         )}
@@ -476,11 +529,12 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <Tabs defaultValue="users" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+            <Tabs value={activeAdminTab} onValueChange={setActiveAdminTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="users">Users</TabsTrigger>
                 <TabsTrigger value="departments">Departments</TabsTrigger>
                 <TabsTrigger value="approvals">Approvals</TabsTrigger>
+                <TabsTrigger value="admissions">Admissions</TabsTrigger>
               </TabsList>
 
               <TabsContent value="users" className="mt-6">
@@ -491,78 +545,9 @@ export default function AdminDashboard() {
                         <CardTitle>Recent Users</CardTitle>
                         <CardDescription>Newly registered students and faculty</CardDescription>
                       </div>
-                      <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
-                        <DialogTrigger asChild>
-                          <Button size="sm">
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Add User
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Add New User</DialogTitle>
-                            <DialogDescription>
-                              Create a new user account. Fill in the details below.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="name">Full Name</Label>
-                              <Input 
-                                id="name" 
-                                placeholder="Enter full name"
-                                value={newUser.name}
-                                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="email">Email</Label>
-                              <Input 
-                                id="email" 
-                                type="email"
-                                placeholder="Enter email address"
-                                value={newUser.email}
-                                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="role">Role</Label>
-                              <Select 
-                                value={newUser.role} 
-                                onValueChange={(value: "Student" | "Faculty" | "Admin") => setNewUser({...newUser, role: value})}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Student">Student</SelectItem>
-                                  <SelectItem value="Faculty">Faculty</SelectItem>
-                                  <SelectItem value="Admin">Admin</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="status">Status</Label>
-                              <Select 
-                                value={newUser.status} 
-                                onValueChange={(value: "active" | "pending") => setNewUser({...newUser, status: value})}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="active">Active</SelectItem>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button variant="outline" onClick={() => setAddUserOpen(false)}>Cancel</Button>
-                            <Button onClick={handleAddUser}>Add User</Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                      <Button size="sm" variant="outline" onClick={() => setActiveAdminTab("admissions")}>
+                        Open Admissions
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -781,6 +766,59 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              <TabsContent value="admissions" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Admission Applications</CardTitle>
+                    <CardDescription>Verify first-time enrollment requests, then approve or reject.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {pendingAdmissions.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                        <p className="text-slate-600">No pending admissions right now.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {pendingAdmissions.map((item) => (
+                          <div key={item.id} className="border border-slate-200 rounded-lg p-4 flex items-center justify-between gap-4">
+                            <div>
+                              <p className="font-semibold text-slate-900">{item.full_name}</p>
+                              <p className="text-sm text-slate-600">
+                                {item.email} | Age {item.age} | {item.gender}
+                              </p>
+                              <p className="text-sm text-slate-600">
+                                Primary: {item.primary_course} | Secondary: {item.secondary_course ?? "-"}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveAdmission(item.id)}>
+                                Approve
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleRejectAdmission(item.id)}>
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800 mb-2">Generated Credentials (Demo Email Queue)</p>
+                      <div className="space-y-2">
+                        {recentCredentials.slice(0, 5).map((item, index) => (
+                          <div key={`${item.email}-${index}`} className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700">
+                            <span className="font-semibold">{item.fullName}</span> | {item.email} | USERNAME: <span className="font-mono">{item.studentNumber}</span> | TEMP PASS: <span className="font-mono">{item.temporaryPassword}</span>
+                          </div>
+                        ))}
+                        {recentCredentials.length === 0 && <p className="text-sm text-slate-500">No generated credentials in this session yet.</p>}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
           </div>
 
@@ -796,10 +834,10 @@ export default function AdminDashboard() {
                   <Button 
                     variant="outline" 
                     className="h-auto py-4 flex flex-col items-center gap-2"
-                    onClick={() => setAddUserOpen(true)}
+                    onClick={() => setActiveAdminTab("admissions")}
                   >
-                    <UserPlus className="h-5 w-5" />
-                    <span className="text-xs">Add User</span>
+                    <Users className="h-5 w-5" />
+                    <span className="text-xs">Admissions</span>
                   </Button>
                   <Button 
                     variant="outline" 

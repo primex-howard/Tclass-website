@@ -26,12 +26,22 @@ import {
   Wrench
 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
 export default function LandingPage() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [admissionForm, setAdmissionForm] = useState({
+    fullName: "",
+    age: "",
+    gender: "",
+    primaryCourse: "",
+    secondaryCourse: "",
+    email: "",
+  });
 
   const programs = [
     {
@@ -178,6 +188,7 @@ export default function LandingPage() {
               <a href="#home" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Home</a>
               <a href="#about" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">About</a>
               <a href="#programs" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Programs</a>
+              <a href="#admission" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Admission</a>
               <a href="#news" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">News</a>
               <a href="#contact" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Contact</a>
             </nav>
@@ -204,6 +215,7 @@ export default function LandingPage() {
               <a href="#home" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Home</a>
               <a href="#about" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>About</a>
               <a href="#programs" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Programs</a>
+              <a href="#admission" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Admission</a>
               <a href="#news" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>News</a>
               <a href="#contact" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Contact</a>
               <div className="pt-2 border-t border-slate-100">
@@ -240,9 +252,9 @@ export default function LandingPage() {
                 <Award className="h-5 w-5 mr-2" />
                 Apply for Scholarship
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm" onClick={() => document.getElementById("admission")?.scrollIntoView({ behavior: "smooth" })}>
                 <BookOpen className="h-5 w-5 mr-2" />
-                View Programs
+                Admission
               </Button>
             </div>
             <div className="mt-12 flex flex-wrap items-center gap-6 lg:gap-8">
@@ -461,6 +473,97 @@ export default function LandingPage() {
               </Button>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Admission Section */}
+      <section id="admission" className="py-20 bg-slate-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <Badge className="mb-4 bg-emerald-100 text-emerald-800">Admission</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">First-Time Enrollment</h2>
+            <p className="text-slate-600">Submit your initial profile. Admin will verify and approve your application.</p>
+          </div>
+          <Card>
+            <CardContent className="p-6 md:p-8">
+              <form
+                className="grid sm:grid-cols-2 gap-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!admissionForm.fullName || !admissionForm.age || !admissionForm.gender || !admissionForm.primaryCourse || !admissionForm.secondaryCourse || !admissionForm.email) {
+                    toast.error("Please complete all admission fields.");
+                    return;
+                  }
+                  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+                  if (!apiBaseUrl) {
+                    toast.error("Missing NEXT_PUBLIC_API_BASE_URL.");
+                    return;
+                  }
+
+                  fetch(`${apiBaseUrl}/admission/submit`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                      full_name: admissionForm.fullName.trim(),
+                      age: Number(admissionForm.age),
+                      gender: admissionForm.gender,
+                      primary_course: admissionForm.primaryCourse.trim(),
+                      secondary_course: admissionForm.secondaryCourse.trim(),
+                      email: admissionForm.email.trim().toLowerCase(),
+                    }),
+                  })
+                    .then(async (res) => {
+                      const payload = await res.json().catch(() => ({}));
+                      if (!res.ok) {
+                        throw new Error((payload as { message?: string }).message ?? "Admission submission failed.");
+                      }
+                      toast.success("Admission submitted. Redirecting to admin review.");
+                      setAdmissionForm({ fullName: "", age: "", gender: "", primaryCourse: "", secondaryCourse: "", email: "" });
+                      router.push("/admin");
+                    })
+                    .catch((error) => {
+                      toast.error(error instanceof Error ? error.message : "Admission submission failed.");
+                    });
+                }}
+              >
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.fullName} onChange={(e) => setAdmissionForm((s) => ({ ...s, fullName: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Age</label>
+                  <input type="number" min={1} className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.age} onChange={(e) => setAdmissionForm((s) => ({ ...s, age: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Gender</label>
+                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.gender} onChange={(e) => setAdmissionForm((s) => ({ ...s, gender: e.target.value }))}>
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Primary Course</label>
+                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.primaryCourse} onChange={(e) => setAdmissionForm((s) => ({ ...s, primaryCourse: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Secondary Course</label>
+                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.secondaryCourse} onChange={(e) => setAdmissionForm((s) => ({ ...s, secondaryCourse: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email Address</label>
+                  <input type="email" className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.email} onChange={(e) => setAdmissionForm((s) => ({ ...s, email: e.target.value }))} />
+                </div>
+                <div className="sm:col-span-2">
+                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Submit Admission</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
