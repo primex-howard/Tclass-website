@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +61,8 @@ import {
   School,
   Trash2,
   Edit
+  ,
+  Loader2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -117,6 +120,10 @@ interface AdmissionApplication {
   email: string;
   status: "pending" | "approved" | "rejected";
   created_user_id: number | null;
+  remarks?: string | null;
+  id_picture_path?: string | null;
+  one_by_one_picture_path?: string | null;
+  right_thumbmark_path?: string | null;
 }
 
 export default function AdminDashboard() {
@@ -172,6 +179,11 @@ export default function AdminDashboard() {
   const [admissions, setAdmissions] = useState<AdmissionApplication[]>([]);
   const [recentCredentials, setRecentCredentials] = useState<{ fullName: string; email: string; studentNumber: string; temporaryPassword: string }[]>([]);
   const [activeAdminTab, setActiveAdminTab] = useState("users");
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectingAdmissionId, setRejectingAdmissionId] = useState<number | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [approvingAdmissionId, setApprovingAdmissionId] = useState<number | null>(null);
+  const [submittingReject, setSubmittingReject] = useState(false);
 
   const loadAdmissions = async () => {
     try {
@@ -297,6 +309,7 @@ export default function AdminDashboard() {
   const pendingAdmissions = admissions.filter((item) => item.status === "pending");
 
   const handleApproveAdmission = async (id: number) => {
+    setApprovingAdmissionId(id);
     try {
       const response = await apiFetch(`/admin/admissions/${id}/approve`, { method: "POST" });
       const preview = (response as { credentials_preview?: { student_number: string; temporary_password: string }; message?: string }).credentials_preview;
@@ -316,16 +329,39 @@ export default function AdminDashboard() {
       await loadAdmissions();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to approve admission.");
+    } finally {
+      setApprovingAdmissionId(null);
     }
   };
 
-  const handleRejectAdmission = async (id: number) => {
+  const openRejectAdmissionModal = (id: number) => {
+    setRejectingAdmissionId(id);
+    setRejectionReason("");
+    setRejectModalOpen(true);
+  };
+
+  const handleRejectAdmission = async () => {
+    if (!rejectingAdmissionId) return;
+    if (!rejectionReason.trim()) {
+      toast.error("Please provide a rejection reason.");
+      return;
+    }
+
+    setSubmittingReject(true);
     try {
-      const response = await apiFetch(`/admin/admissions/${id}/reject`, { method: "POST", body: JSON.stringify({}) });
+      const response = await apiFetch(`/admin/admissions/${rejectingAdmissionId}/reject`, {
+        method: "POST",
+        body: JSON.stringify({ remarks: rejectionReason.trim() }),
+      });
       toast.error((response as { message?: string }).message ?? "Admission rejected.");
+      setRejectModalOpen(false);
+      setRejectingAdmissionId(null);
+      setRejectionReason("");
       await loadAdmissions();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to reject admission.");
+    } finally {
+      setSubmittingReject(false);
     }
   };
 
@@ -791,12 +827,38 @@ export default function AdminDashboard() {
                               <p className="text-sm text-slate-600">
                                 Primary: {item.primary_course} | Secondary: {item.secondary_course ?? "-"}
                               </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                Attachments:
+                                {" "}
+                                ID {item.id_picture_path ? "yes" : "no"},
+                                {" "}
+                                1x1 {item.one_by_one_picture_path ? "yes" : "no"},
+                                {" "}
+                                Thumbmark {item.right_thumbmark_path ? "yes" : "no"}
+                              </p>
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveAdmission(item.id)}>
-                                Approve
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => handleApproveAdmission(item.id)}
+                                disabled={approvingAdmissionId === item.id || submittingReject}
+                              >
+                                {approvingAdmissionId === item.id ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Approving...
+                                  </>
+                                ) : (
+                                  "Approve"
+                                )}
                               </Button>
-                              <Button size="sm" variant="destructive" onClick={() => handleRejectAdmission(item.id)}>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => openRejectAdmissionModal(item.id)}
+                                disabled={approvingAdmissionId === item.id || submittingReject}
+                              >
                                 Reject
                               </Button>
                             </div>
@@ -1050,6 +1112,42 @@ export default function AdminDashboard() {
             <Button variant="destructive" onClick={handleDeleteUser}>
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={rejectModalOpen} onOpenChange={setRejectModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Admission</DialogTitle>
+            <DialogDescription>
+              Provide the reason why this registration was rejected. This will be saved in the admission record.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="rejection-reason">Rejection reason</Label>
+            <Textarea
+              id="rejection-reason"
+              rows={4}
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Enter the rejection reason..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRejectAdmission} disabled={submittingReject}>
+              {submittingReject ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Rejecting...
+                </>
+              ) : (
+                "Confirm Reject"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

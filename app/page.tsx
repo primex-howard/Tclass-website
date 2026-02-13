@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { 
+import {
   GraduationCap, 
   MapPin, 
   Phone, 
@@ -22,26 +22,15 @@ import {
   Truck,
   HardHat,
   Laptop,
-  ChefHat,
   Wrench
 } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
 export default function LandingPage() {
-  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-  const [admissionForm, setAdmissionForm] = useState({
-    fullName: "",
-    age: "",
-    gender: "",
-    primaryCourse: "",
-    secondaryCourse: "",
-    email: "",
-  });
 
   const programs = [
     {
@@ -139,7 +128,7 @@ export default function LandingPage() {
     : programs.filter(p => p.category === activeTab);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-slate-50 text-slate-900">
       {/* Top Bar */}
       <div className="bg-blue-900 text-white text-sm py-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
@@ -163,7 +152,7 @@ export default function LandingPage() {
       </div>
 
       {/* Navigation */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-blue-100/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
@@ -184,13 +173,13 @@ export default function LandingPage() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-              <a href="#home" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Home</a>
-              <a href="#about" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">About</a>
-              <a href="#programs" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Programs</a>
-              <a href="#admission" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Admission</a>
-              <a href="#news" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">News</a>
-              <a href="#contact" className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">Contact</a>
+            <nav className="hidden md:flex items-center gap-3">
+              <a href="#home" className="nav-chip">Home</a>
+              <a href="#about" className="nav-chip">About</a>
+              <a href="#programs" className="nav-chip">Programs</a>
+              <Link href="/admission" className="nav-chip nav-chip-active">Admission</Link>
+              <a href="#news" className="nav-chip">News</a>
+              <a href="#contact" className="nav-chip">Contact</a>
             </nav>
 
             {/* CTA Buttons */}
@@ -215,7 +204,7 @@ export default function LandingPage() {
               <a href="#home" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Home</a>
               <a href="#about" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>About</a>
               <a href="#programs" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Programs</a>
-              <a href="#admission" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Admission</a>
+              <Link href="/admission" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Admission</Link>
               <a href="#news" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>News</a>
               <a href="#contact" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Contact</a>
               <div className="pt-2 border-t border-slate-100">
@@ -227,7 +216,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section id="home" className="relative text-white min-h-[600px] lg:min-h-[700px]">
+      <section id="home" className="relative text-white min-h-[600px] lg:min-h-[700px] motion-fade-rise">
         {/* Background Image with TCLASS Logo */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -237,9 +226,9 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/80 to-blue-900/70" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 flex items-center min-h-[600px] lg:min-h-[700px]">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl motion-fade-rise motion-delay-1">
             <Badge className="mb-4 bg-yellow-500 text-blue-900 hover:bg-yellow-400 font-semibold">EST. 2007</Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+            <h1 className="hero-title text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
               PGT - Tarlac Center for<br />
               <span className="text-yellow-400">Learning And Skills Success</span>
             </h1>
@@ -252,10 +241,12 @@ export default function LandingPage() {
                 <Award className="h-5 w-5 mr-2" />
                 Apply for Scholarship
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm" onClick={() => document.getElementById("admission")?.scrollIntoView({ behavior: "smooth" })}>
+              <Link href="/admission">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm">
                 <BookOpen className="h-5 w-5 mr-2" />
                 Admission
-              </Button>
+                </Button>
+              </Link>
             </div>
             <div className="mt-12 flex flex-wrap items-center gap-6 lg:gap-8">
               <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
@@ -276,12 +267,12 @@ export default function LandingPage() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-white">
+      <section id="about" className="py-20 bg-white/85">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <Badge className="mb-4 bg-blue-100 text-blue-800">About Us</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
+              <h2 className="hero-title text-3xl md:text-4xl font-bold text-blue-950 mb-6">
                 Empowering Tarlaqueños Through Quality Technical Education
               </h2>
               <p className="text-slate-600 mb-6 text-lg">
@@ -329,7 +320,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square rounded-2xl overflow-hidden bg-slate-200">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-slate-200 elev-card">
                 <div className="w-full h-full bg-gradient-to-br from-blue-100 to-teal-100 flex items-center justify-center">
                   <div className="text-center p-8">
                     <div className="w-32 h-32 mx-auto mb-4 bg-teal-500 rounded-full flex items-center justify-center">
@@ -349,11 +340,11 @@ export default function LandingPage() {
       </section>
 
       {/* Programs Section */}
-      <section id="programs" className="py-20 bg-slate-50">
+      <section id="programs" className="py-20 bg-gradient-to-b from-blue-50/70 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-blue-100 text-blue-800">Our Programs</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="hero-title text-3xl md:text-4xl font-bold text-blue-950 mb-4">
               Training Programs & Scholarships
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
@@ -373,10 +364,10 @@ export default function LandingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
                   activeTab === tab.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-slate-600 hover:bg-slate-100"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-white text-slate-600 hover:bg-blue-50 border border-blue-100"
                 }`}
               >
                 {tab.label}
@@ -387,8 +378,8 @@ export default function LandingPage() {
           {/* Programs Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPrograms.map((program) => (
-              <Card key={program.id} className="overflow-hidden hover:shadow-xl transition-shadow group">
-                <div className="h-48 bg-gradient-to-br from-blue-500 to-teal-600 flex items-center justify-center">
+              <Card key={program.id} className="overflow-hidden elev-card group">
+                <div className="h-48 bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
                   <program.icon className="h-20 w-20 text-white/80" />
                 </div>
                 <CardContent className="p-6">
@@ -431,11 +422,11 @@ export default function LandingPage() {
       </section>
 
       {/* News/Updates Section */}
-      <section id="news" className="py-20 bg-white">
+      <section id="news" className="py-20 bg-white/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-blue-100 text-blue-800">News & Updates</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="hero-title text-3xl md:text-4xl font-bold text-blue-950 mb-4">
               Latest from TCLASS
             </h2>
             <p className="text-slate-600">
@@ -445,7 +436,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {news.map((item) => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Card key={item.id} className="overflow-hidden elev-card">
                 <div className="h-48 bg-slate-200 flex items-center justify-center">
                   <BookOpen className="h-12 w-12 text-slate-400" />
                 </div>
@@ -473,97 +464,6 @@ export default function LandingPage() {
               </Button>
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Admission Section */}
-      <section id="admission" className="py-20 bg-slate-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <Badge className="mb-4 bg-emerald-100 text-emerald-800">Admission</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">First-Time Enrollment</h2>
-            <p className="text-slate-600">Submit your initial profile. Admin will verify and approve your application.</p>
-          </div>
-          <Card>
-            <CardContent className="p-6 md:p-8">
-              <form
-                className="grid sm:grid-cols-2 gap-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!admissionForm.fullName || !admissionForm.age || !admissionForm.gender || !admissionForm.primaryCourse || !admissionForm.secondaryCourse || !admissionForm.email) {
-                    toast.error("Please complete all admission fields.");
-                    return;
-                  }
-                  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-                  if (!apiBaseUrl) {
-                    toast.error("Missing NEXT_PUBLIC_API_BASE_URL.");
-                    return;
-                  }
-
-                  fetch(`${apiBaseUrl}/admission/submit`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Accept: "application/json",
-                    },
-                    body: JSON.stringify({
-                      full_name: admissionForm.fullName.trim(),
-                      age: Number(admissionForm.age),
-                      gender: admissionForm.gender,
-                      primary_course: admissionForm.primaryCourse.trim(),
-                      secondary_course: admissionForm.secondaryCourse.trim(),
-                      email: admissionForm.email.trim().toLowerCase(),
-                    }),
-                  })
-                    .then(async (res) => {
-                      const payload = await res.json().catch(() => ({}));
-                      if (!res.ok) {
-                        throw new Error((payload as { message?: string }).message ?? "Admission submission failed.");
-                      }
-                      toast.success("Admission submitted. Redirecting to admin review.");
-                      setAdmissionForm({ fullName: "", age: "", gender: "", primaryCourse: "", secondaryCourse: "", email: "" });
-                      router.push("/admin");
-                    })
-                    .catch((error) => {
-                      toast.error(error instanceof Error ? error.message : "Admission submission failed.");
-                    });
-                }}
-              >
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.fullName} onChange={(e) => setAdmissionForm((s) => ({ ...s, fullName: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Age</label>
-                  <input type="number" min={1} className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.age} onChange={(e) => setAdmissionForm((s) => ({ ...s, age: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Gender</label>
-                  <select className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.gender} onChange={(e) => setAdmissionForm((s) => ({ ...s, gender: e.target.value }))}>
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Primary Course</label>
-                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.primaryCourse} onChange={(e) => setAdmissionForm((s) => ({ ...s, primaryCourse: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Secondary Course</label>
-                  <input className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.secondaryCourse} onChange={(e) => setAdmissionForm((s) => ({ ...s, secondaryCourse: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email Address</label>
-                  <input type="email" className="w-full rounded-lg border border-slate-300 px-3 py-2" value={admissionForm.email} onChange={(e) => setAdmissionForm((s) => ({ ...s, email: e.target.value }))} />
-                </div>
-                <div className="sm:col-span-2">
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Submit Admission</Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
         </div>
       </section>
 
@@ -630,7 +530,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 text-slate-900">
+            <div className="glass-panel rounded-2xl p-8 text-slate-900">
               <h3 className="text-2xl font-bold mb-6">Send Us a Message</h3>
               <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); toast.success("Message sent! We'll get back to you soon."); }}>
                 <div className="grid sm:grid-cols-2 gap-4">

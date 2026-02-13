@@ -1,0 +1,53 @@
+import { getCookieValue } from "@/lib/api-client";
+
+type AdmissionSubmitInput = {
+  fullName: string;
+  age: number;
+  gender: string;
+  primaryCourse: string;
+  secondaryCourse?: string | null;
+  email: string;
+  facebookAccount?: string | null;
+  contactNo?: string | null;
+  formData: Record<string, unknown>;
+  idPictureFile?: File | null;
+  oneByOnePictureFile?: File | null;
+  rightThumbmarkFile?: File | null;
+};
+
+export async function submitAdmissionForm(input: AdmissionSubmitInput) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!baseUrl) {
+    throw new Error("Missing NEXT_PUBLIC_API_BASE_URL");
+  }
+
+  const token = getCookieValue("tclass_token");
+  const body = new FormData();
+  body.append("full_name", input.fullName);
+  body.append("age", String(input.age));
+  body.append("gender", input.gender);
+  body.append("primary_course", input.primaryCourse);
+  body.append("secondary_course", input.secondaryCourse ?? "");
+  body.append("email", input.email);
+  body.append("facebook_account", input.facebookAccount ?? "");
+  body.append("contact_no", input.contactNo ?? "");
+  body.append("form_data", JSON.stringify(input.formData));
+
+  if (input.idPictureFile) body.append("id_picture", input.idPictureFile);
+  if (input.oneByOnePictureFile) body.append("one_by_one_picture", input.oneByOnePictureFile);
+  if (input.rightThumbmarkFile) body.append("right_thumbmark", input.rightThumbmarkFile);
+
+  const response = await fetch(`${baseUrl}/admission/submit`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = (payload as { message?: string }).message ?? "Admission submission failed.";
+    throw new Error(message);
+  }
+
+  return payload;
+}

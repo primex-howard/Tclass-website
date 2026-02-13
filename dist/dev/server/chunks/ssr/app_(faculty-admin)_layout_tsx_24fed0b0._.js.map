@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Primex-Howard/Desktop/tclass-v1-frontend/app/%28faculty-admin%29/layout.tsx"],"sourcesContent":["import type { Metadata } from \"next\";\r\nimport { Geist, Geist_Mono } from \"next/font/google\";\r\nimport \"../globals.css\";\r\n\r\nconst geistSans = Geist({\r\n  variable: \"--font-geist-sans\",\r\n  subsets: [\"latin\"],\r\n});\r\n\r\nconst geistMono = Geist_Mono({\r\n  variable: \"--font-geist-mono\",\r\n  subsets: [\"latin\"],\r\n});\r\n\r\nexport const metadata: Metadata = {\r\n  title: \"TClass - Faculty & Admin Portal\",\r\n  description: \"TClass Faculty and Administration Portal\",\r\n};\r\n\r\nexport default function FacultyAdminLayout({\r\n  children,\r\n}: Readonly<{\r\n  children: React.ReactNode;\r\n}>) {\r\n  return (\r\n    <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>\r\n      {children}\r\n    </div>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;;;;;;;;AAcO,MAAM,WAAqB;IAChC,OAAO;IACP,aAAa;AACf;AAEe,SAAS,mBAAmB,EACzC,QAAQ,EAGR;IACA,qBACE,8OAAC;QAAI,WAAW,GAAG,oJAAS,CAAC,QAAQ,CAAC,CAAC,EAAE,yJAAS,CAAC,QAAQ,CAAC,YAAY,CAAC;kBACtE;;;;;;AAGP"}}]
-}

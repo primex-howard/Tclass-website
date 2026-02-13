@@ -169,9 +169,9 @@ const defaultForm: FormState = {
   rightThumbmarkNote: "",
 };
 
-const ENROLLMENT_DRAFT_KEY = "tclass_student_enrollment_form_draft_v1";
+const ADMISSION_DRAFT_KEY = "tclass_admission_form_draft_v1";
 
-export default function StudentEnrollmentPage() {
+export default function AdmissionPage() {
   const [form, setForm] = useState<FormState>(defaultForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [idPictureFile, setIdPictureFile] = useState<File | null>(null);
@@ -184,7 +184,7 @@ export default function StudentEnrollmentPage() {
     if (typeof window === "undefined") return;
 
     try {
-      const saved = window.localStorage.getItem(ENROLLMENT_DRAFT_KEY);
+      const saved = window.localStorage.getItem(ADMISSION_DRAFT_KEY);
       if (!saved) return;
       const parsed = JSON.parse(saved) as Partial<FormState>;
       setForm((prev) => ({ ...prev, ...parsed }));
@@ -200,7 +200,7 @@ export default function StudentEnrollmentPage() {
     if (typeof window === "undefined") return;
     if (!isDraftReady) return;
     try {
-      window.localStorage.setItem(ENROLLMENT_DRAFT_KEY, JSON.stringify(form));
+      window.localStorage.setItem(ADMISSION_DRAFT_KEY, JSON.stringify(form));
     } catch {
       // Ignore storage failures.
     }
@@ -246,17 +246,17 @@ export default function StudentEnrollmentPage() {
         rightThumbmarkFile,
       });
 
-      toast.success((response as { message?: string }).message ?? "Registration submitted successfully.");
+      toast.success((response as { message?: string }).message ?? "Admission submitted successfully.");
       setForm(defaultForm);
       setIdPictureFile(null);
       setOneByOnePictureFile(null);
       setRightThumbmarkFile(null);
       setSubmittedModalOpen(true);
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem(ENROLLMENT_DRAFT_KEY);
+        window.localStorage.removeItem(ADMISSION_DRAFT_KEY);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to submit registration.");
+      toast.error(error instanceof Error ? error.message : "Failed to submit admission.");
     } finally {
       setIsSubmitting(false);
     }
@@ -269,10 +269,10 @@ export default function StudentEnrollmentPage() {
           <div>
             <Badge className="mb-2 bg-blue-100 text-blue-700 border border-blue-200">Registration Form</Badge>
             <h1 className="text-3xl font-semibold text-blue-950">Learner&apos;s Profile Form</h1>
-            <p className="text-slate-600 mt-1">TESDA-style enrollment profile (frontend version for client review).</p>
+            <p className="text-slate-600 mt-1">TESDA-style admission enrollment profile (frontend draft).</p>
           </div>
-          <Link href="/student">
-            <Button variant="outline" className="border-blue-200 text-blue-800 hover:bg-blue-50">Back to Dashboard</Button>
+          <Link href="/">
+            <Button variant="outline" className="border-blue-200 text-blue-800 hover:bg-blue-50">Back to Home</Button>
           </Link>
         </div>
 
