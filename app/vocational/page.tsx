@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -187,7 +187,7 @@ const PH_VALID_IDS = [
   "Others",
 ];
 
-export default function VocationalPage() {
+function VocationalPageContent() {
   const searchParams = useSearchParams();
   const [form, setForm] = useState<FormState>(defaultForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -781,5 +781,13 @@ export default function VocationalPage() {
         </Dialog>
       </div>
     </main>
+  );
+}
+
+export default function VocationalPage() {
+  return (
+    <Suspense fallback={null}>
+      <VocationalPageContent />
+    </Suspense>
   );
 }
