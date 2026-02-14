@@ -378,11 +378,11 @@ export default function LandingPage() {
           {/* Programs Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPrograms.map((program) => (
-              <Card key={program.id} className="overflow-hidden elev-card group">
+              <Card key={program.id} className="overflow-hidden elev-card group h-full">
                 <div className="h-48 bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
                   <program.icon className="h-20 w-20 text-white/80" />
                 </div>
-                <CardContent className="p-6">
+                <CardContent className="p-6 flex h-[320px] flex-col">
                   <Badge className="mb-3 bg-yellow-100 text-yellow-800">{program.slots}</Badge>
                   <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
                     {program.title}
@@ -411,9 +411,13 @@ export default function LandingPage() {
                       </ul>
                     </div>
                   )}
-                  <Button className="w-full" onClick={() => toast.success(`Opening application for ${program.title}`)}>
-                    Apply Now
-                  </Button>
+                  <div className="mt-auto">
+                    <Link href={`/vocational?program=${encodeURIComponent(program.title)}`}>
+                      <Button className="w-full">
+                        Enroll Now
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}

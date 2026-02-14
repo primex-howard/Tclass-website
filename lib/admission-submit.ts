@@ -7,12 +7,16 @@ type AdmissionSubmitInput = {
   primaryCourse: string;
   secondaryCourse?: string | null;
   email: string;
+  applicationType?: "admission" | "vocational";
+  validIdType?: string | null;
   facebookAccount?: string | null;
   contactNo?: string | null;
   formData: Record<string, unknown>;
   idPictureFile?: File | null;
   oneByOnePictureFile?: File | null;
   rightThumbmarkFile?: File | null;
+  birthCertificateFile?: File | null;
+  validIdImageFile?: File | null;
 };
 
 export async function submitAdmissionForm(input: AdmissionSubmitInput) {
@@ -29,6 +33,8 @@ export async function submitAdmissionForm(input: AdmissionSubmitInput) {
   body.append("primary_course", input.primaryCourse);
   body.append("secondary_course", input.secondaryCourse ?? "");
   body.append("email", input.email);
+  body.append("application_type", input.applicationType ?? "admission");
+  body.append("valid_id_type", input.validIdType ?? "");
   body.append("facebook_account", input.facebookAccount ?? "");
   body.append("contact_no", input.contactNo ?? "");
   body.append("form_data", JSON.stringify(input.formData));
@@ -36,6 +42,8 @@ export async function submitAdmissionForm(input: AdmissionSubmitInput) {
   if (input.idPictureFile) body.append("id_picture", input.idPictureFile);
   if (input.oneByOnePictureFile) body.append("one_by_one_picture", input.oneByOnePictureFile);
   if (input.rightThumbmarkFile) body.append("right_thumbmark", input.rightThumbmarkFile);
+  if (input.birthCertificateFile) body.append("birth_certificate", input.birthCertificateFile);
+  if (input.validIdImageFile) body.append("valid_id_image", input.validIdImageFile);
 
   const response = await fetch(`${baseUrl}/admission/submit`, {
     method: "POST",

@@ -118,12 +118,16 @@ interface AdmissionApplication {
   primary_course: string;
   secondary_course: string | null;
   email: string;
+  application_type?: "admission" | "vocational";
+  valid_id_type?: string | null;
   status: "pending" | "approved" | "rejected";
   created_user_id: number | null;
   remarks?: string | null;
   id_picture_path?: string | null;
   one_by_one_picture_path?: string | null;
   right_thumbmark_path?: string | null;
+  birth_certificate_path?: string | null;
+  valid_id_path?: string | null;
 }
 
 export default function AdminDashboard() {
@@ -306,7 +310,8 @@ export default function AdminDashboard() {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
-  const pendingAdmissions = admissions.filter((item) => item.status === "pending");
+  const pendingAdmissions = admissions.filter((item) => item.status === "pending" && (item.application_type ?? "admission") === "admission");
+  const pendingVocationals = admissions.filter((item) => item.status === "pending" && (item.application_type ?? "admission") === "vocational");
 
   const handleApproveAdmission = async (id: number) => {
     setApprovingAdmissionId(id);
@@ -566,11 +571,12 @@ export default function AdminDashboard() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Tabs value={activeAdminTab} onValueChange={setActiveAdminTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="users">Users</TabsTrigger>
                 <TabsTrigger value="departments">Departments</TabsTrigger>
                 <TabsTrigger value="approvals">Approvals</TabsTrigger>
                 <TabsTrigger value="admissions">Admissions</TabsTrigger>
+                <TabsTrigger value="vocationals">Vocationals</TabsTrigger>
               </TabsList>
 
               <TabsContent value="users" className="mt-6">
@@ -878,6 +884,80 @@ export default function AdminDashboard() {
                         {recentCredentials.length === 0 && <p className="text-sm text-slate-500">No generated credentials in this session yet.</p>}
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="vocationals" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Vocational Enrollees</CardTitle>
+                    <CardDescription>Review Training Programs & Scholarships enrollment applications.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {pendingVocationals.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                        <p className="text-slate-600">No pending vocational applications right now.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {pendingVocationals.map((item) => (
+                          <div key={item.id} className="border border-slate-200 rounded-lg p-4 flex items-center justify-between gap-4">
+                            <div>
+                              <p className="font-semibold text-slate-900">{item.full_name}</p>
+                              <p className="text-sm text-slate-600">
+                                {item.email} | Age {item.age} | {item.gender}
+                              </p>
+                              <p className="text-sm text-slate-600">
+                                Program: {item.primary_course} | Scholarship: {item.secondary_course ?? "-"}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                Valid ID Type: {item.valid_id_type ?? "-"}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                Attachments:
+                                {" "}
+                                Birth Cert {item.birth_certificate_path ? "yes" : "no"},
+                                {" "}
+                                Valid ID {item.valid_id_path ? "yes" : "no"},
+                                {" "}
+                                ID Pic {item.id_picture_path ? "yes" : "no"},
+                                {" "}
+                                1x1 {item.one_by_one_picture_path ? "yes" : "no"},
+                                {" "}
+                                Thumbmark {item.right_thumbmark_path ? "yes" : "no"}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => handleApproveAdmission(item.id)}
+                                disabled={approvingAdmissionId === item.id || submittingReject}
+                              >
+                                {approvingAdmissionId === item.id ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Approving...
+                                  </>
+                                ) : (
+                                  "Approve"
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => openRejectAdmissionModal(item.id)}
+                                disabled={approvingAdmissionId === item.id || submittingReject}
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
